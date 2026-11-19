@@ -1,0 +1,335 @@
+name: Build Vector Kernel
+
+on:
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: 'Kernel variant to build'
+        required: true
+        default: 'kernel'
+        type: choice
+        options:
+          - kernel
+          - both
+          - ksu
+      create_release:
+        description: 'Publish GitHub Release'
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches:
+      - vector-port
+      - main
+    paths-ignore:
+      - '**.md'
+      - '**.rst'
+      - 'Documentation/**'
+      - '.gitignore'
+      - 'LICENSE'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build (${{ matrix.variant == 'ksu' && 'KSU' || 'kernel' }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Note: KSU variant deferred until kernel source porting is complete
+        variant: [kernel]
+
+    steps:
+      - name: Determine if variant should run
+        id: check_variant
+        run: |
+          TARGET_VARIANT="${{ github.event.inputs.variant }}"
+          CURRENT_VARIANT="${{ matrix.variant }}"
+
+          RUN=true
+          if [ -n "$TARGET_VARIANT" ] && [ "$TARGET_VARIANT" != "both" ] && [ "$TARGET_VARIANT" != "$CURRENT_VARIANT" ]; then
+            RUN=false
+          fi
+
+          echo "should_run=$RUN" >> $GITHUB_OUTPUT
+          if [ "$RUN" = "true" ]; then
+            echo "Running build for $CURRENT_VARIANT"
+          else
+            echo "Skipping $CURRENT_VARIANT (target: variant=$TARGET_VARIANT)"
+          fi
+
+      - name: Checkout Source Code
+        if: steps.check_variant.outputs.should_run == 'true'
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Set up Environment Variables
+        if: steps.check_variant.outputs.should_run == 'true'
+        run: |
+          BUILD_DATE=$(date -u +%Y%m%d)
+          BUILD_TIME=$(date -u +%Y%m%d-%H%M)
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+          echo "BUILD_DATE=${BUILD_DATE}" >> $GITHUB_ENV
+          echo "BUILD_TIME=${BUILD_TIME}" >> $GITHUB_ENV
+          echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
+
+          echo "DEFCONFIG=vendor/veux-qgki-debug_defconfig" >> $GITHUB_ENV
+          echo "ZIP_PREFIX=Vector-veux" >> $GITHUB_ENV
+
+      - name: Install Build Dependencies
+        if: steps.check_variant.outputs.should_run == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            bc bison build-essential ccache curl flex \
+            gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi \
+            git libssl-dev libelf-dev lz4 xz-utils zip python3 device-tree-compiler
+
+      - name: Download & Set up latest LLVM
+        if: steps.check_variant.outputs.should_run == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p llvm
+
+          for attempt in 1 2 3 4 5; do
+            echo "Download attempt $attempt"
+            rm -f llvm.tar.xz
+            if gh release download \
+                 --repo llvm/llvm-project \
+                 --pattern 'LLVM-*-Linux-X64.tar.xz' \
+                 --output llvm.tar.xz \
+               && xz -t llvm.tar.xz; then
+              echo "Download verified"
+              break
+            fi
+            if [ "$attempt" = "5" ]; then
+              echo "::error::LLVM download failed after 5 attempts"
+              exit 1
+            fi
+            sleep $((attempt * 10))
+          done
+
+          tar -xJf llvm.tar.xz --strip-components=1 -C llvm
+          rm llvm.tar.xz
+          echo "$GITHUB_WORKSPACE/llvm/bin" >> $GITHUB_PATH
+
+          llvm/bin/clang --version
+          llvm/bin/ld.lld --version
+
+      - name: Setup ccache
+        if: steps.check_variant.outputs.should_run == 'true'
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ matrix.variant }}-${{ github.sha }}
+          restore-keys: ${{ matrix.variant }}-
+          max-size: 4G
+
+      - name: Configure Kernel
+        if: steps.check_variant.outputs.should_run == 'true'
+        run: |
+          export ARCH=arm64
+          export SUBARCH=arm64
+          export PATH="$GITHUB_WORKSPACE/llvm/bin:$PATH"
+
+          echo "Generating defconfig: ${DEFCONFIG}"
+          make O=out ARCH=arm64 CC=clang LLVM=1 LLVM_IAS=1 \
+            CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+            ${DEFCONFIG}
+
+          echo "Enabling ThinLTO to optimize memory footprint during linking..."
+          bash ./scripts/config --file out/.config -e THINLTO
+
+          if [ "${{ matrix.variant }}" = "ksu" ]; then
+            # TODO: Re-enable KernelSU & KPM configs when KSU source porting is complete
+            # bash ./scripts/config --file out/.config -e KSU -e KPM -e DEBUG_KERNEL -e KALLSYMS -e KALLSYMS_ALL
+            echo "--> [TODO] KSU flavor requested but source changes not ported yet."
+          fi
+
+          bash ./scripts/config --file out/.config -d KSU -d KPM
+
+          make O=out ARCH=arm64 CC=clang LLVM=1 LLVM_IAS=1 \
+            CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+            olddefconfig
+
+      - name: Compile Kernel & DTB
+        if: steps.check_variant.outputs.should_run == 'true'
+        run: |
+          export ARCH=arm64
+          export SUBARCH=arm64
+          export PATH="$GITHUB_WORKSPACE/llvm/bin:$PATH"
+          export KBUILD_BUILD_USER="ThisColdBlueSky"
+          export KBUILD_BUILD_HOST="github-actions"
+
+          # TODO: When KSU is ported:
+          # if [ "${{ matrix.variant }}" = "ksu" ]; then
+          #   make O=out ARCH=arm64 CC="ccache clang" LLVM=1 LLVM_IAS=1 ... headers_install
+          # fi
+
+          make -j$(nproc --all) O=out ARCH=arm64 \
+            CC="ccache clang" LLVM=1 LLVM_IAS=1 \
+            CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+            KCFLAGS="-Wno-error -O3" \
+            Image dtbs
+
+      - name: Verify Build Outputs
+        if: steps.check_variant.outputs.should_run == 'true'
+        run: |
+          if [ ! -f out/arch/arm64/boot/Image ]; then
+            echo "::error::Kernel Image was not generated!"
+            exit 1
+          fi
+
+          DTB_PATH=$(find out/arch/arm64/boot/dts -name "veux.dtb" | head -n 1 || true)
+          if [ -z "$DTB_PATH" ] || [ ! -f "$DTB_PATH" ]; then
+            echo "::warning::veux.dtb was not generated yet (DTS port pending)."
+          else
+            echo "Found DTB: $DTB_PATH (size: $(stat -c%s "$DTB_PATH") bytes)"
+            echo "DTB_PATH=$DTB_PATH" >> $GITHUB_ENV
+          fi
+
+          echo "Kernel Image size: $(stat -c%s out/arch/arm64/boot/Image) bytes"
+
+      - name: Patch Kernel with KernelPatch (KPM)
+        if: steps.check_variant.outputs.should_run == 'true' && matrix.variant == 'ksu'
+        run: |
+          # TODO: Restore KPM patch when patch_kpm.sh and KSU sources are integrated
+          echo "--> [TODO] KPM image patching skipped (source porting pending)"
+
+      - name: Package AnyKernel3 Flashable Zip
+        if: steps.check_variant.outputs.should_run == 'true'
+        run: |
+          VARIANT="${{ matrix.variant }}"
+
+          if [ "$VARIANT" = "ksu" ]; then
+            ZIP_NAME="${ZIP_PREFIX}-${BUILD_DATE}-KSU.zip"
+            IMAGE_SUFFIX="_KSU"
+          else
+            ZIP_NAME="${ZIP_PREFIX}-${BUILD_DATE}.zip"
+            IMAGE_SUFFIX=""
+          fi
+
+          PACKAGE_DIR="package_${VARIANT}"
+          mkdir -p "$PACKAGE_DIR"
+          cp -r anykernel/* "$PACKAGE_DIR"/
+          cp out/arch/arm64/boot/Image "$PACKAGE_DIR"/Image
+          if [ -n "${DTB_PATH:-}" ] && [ -f "${DTB_PATH:-}" ]; then
+            cp "$DTB_PATH" "$PACKAGE_DIR"/dtb
+          fi
+
+          # Dynamically set version with commit string in module.prop
+          SHORT_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo "${GITHUB_SHA:0:7}")
+          if [ "$VARIANT" = "ksu" ]; then
+            MOD_VER="5.4.134~Vector-${SHORT_SHA}-KSU"
+          else
+            MOD_VER="5.4.134~Vector-${SHORT_SHA}"
+          fi
+          if [ -f "$PACKAGE_DIR/module.prop" ]; then
+            sed -i "s/^version=.*/version=${MOD_VER}/" "$PACKAGE_DIR/module.prop"
+          fi
+
+          chmod +x "$PACKAGE_DIR"/anykernel.sh \
+                   "$PACKAGE_DIR"/META-INF/com/google/android/update-binary \
+                   "$PACKAGE_DIR"/tools/* \
+                   "$PACKAGE_DIR"/customize.sh \
+                   "$PACKAGE_DIR"/action.sh 2>/dev/null || true
+
+          cd "$PACKAGE_DIR"
+          zip -r9 "../${ZIP_NAME}" * -x ".git*" "README.md"
+          cd ..
+
+          sha256sum "${ZIP_NAME}" > "${ZIP_NAME}.sha256"
+
+          mkdir -p build_output
+          cp "${ZIP_NAME}" build_output/
+          cp "${ZIP_NAME}.sha256" build_output/
+          cp out/arch/arm64/boot/Image "build_output/Image${IMAGE_SUFFIX}"
+          if [ -n "${DTB_PATH:-}" ] && [ -f "${DTB_PATH:-}" ]; then
+            cp "$DTB_PATH" "build_output/dtb${IMAGE_SUFFIX}"
+          fi
+
+          mkdir -p vmlinux_output
+          if [ -f out/vmlinux ]; then
+            echo "Archiving unstripped vmlinux..."
+            gzip -c out/vmlinux > vmlinux_output/vmlinux.gz
+          fi
+
+      - name: Upload Build Artifacts
+        if: steps.check_variant.outputs.should_run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Vector-veux${{ matrix.variant == 'ksu' && '-KSU' || '' }}
+          path: build_output/*
+          retention-days: 7
+
+      - name: Upload vmlinux Debug Artifact
+        if: steps.check_variant.outputs.should_run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: vmlinux${{ matrix.variant == 'ksu' && '-KSU' || '' }}
+          path: vmlinux_output/*
+          retention-days: 7
+
+  release:
+    name: Package & Release
+    needs: [build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: |
+      needs.build.result == 'success' &&
+      github.event_name == 'workflow_dispatch' &&
+      inputs.create_release == true
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Install Packaging Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zip
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all_artifacts
+
+      - name: Prepare Release Assets
+        run: |
+          mkdir -p release_assets
+          BUILD_DATE=$(date -u +%Y%m%d)
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+
+          find all_artifacts -name "*.zip" -exec cp {} release_assets/ \;
+          find all_artifacts -name "*.sha256" -exec cp {} release_assets/ \;
+
+          echo "Final release assets:"
+          ls -la release_assets/
+          echo "TAG_NAME=v${BUILD_DATE}-${SHORT_SHA}" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: Vector Kernel for POCO X4 Pro 5G (${{ env.TAG_NAME }})
+          draft: false
+          prerelease: false
+          files: release_assets/*
+          body: |
+            ## Vector Kernel for POCO X4 Pro 5G (`veux` / `peux`)
+            
+            - **Commit:** `${{ github.sha }}`
+            - **Branch:** `${{ github.ref_name }}`
+            - **Kernel Release:** `5.4.134~Vector`
+            
+            ### Included Packages:
+            - **`Vector-veux-YYYYMMDD.zip`**: Clean kernel AnyKernel3 package.
