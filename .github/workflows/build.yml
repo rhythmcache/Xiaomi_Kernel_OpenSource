@@ -176,7 +176,7 @@ jobs:
             CC="ccache clang" LLVM=1 LLVM_IAS=1 \
             CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
             KCFLAGS="-Wno-error -Wno-implicit-int -Wno-strict-prototypes -O3" \
-            Image
+            Image dtbs
 
       - name: Verify Build Outputs
         if: steps.check_variant.outputs.should_run == 'true'
@@ -186,15 +186,15 @@ jobs:
             exit 1
           fi
 
-          DTB_PATH=$(find out/arch/arm64/boot/dts -name "veux.dtb" | head -n 1 || true)
+          DTB_PATH=$(find out/arch/arm64/boot/dts -name "veux.dtb" | head -n 1)
           if [ -z "$DTB_PATH" ] || [ ! -f "$DTB_PATH" ]; then
-            echo "::warning::veux.dtb was not generated yet (DTS port pending)."
-          else
-            echo "Found DTB: $DTB_PATH (size: $(stat -c%s "$DTB_PATH") bytes)"
-            echo "DTB_PATH=$DTB_PATH" >> $GITHUB_ENV
+            echo "::error::veux.dtb was not generated!"
+            exit 1
           fi
 
           echo "Kernel Image size: $(stat -c%s out/arch/arm64/boot/Image) bytes"
+          echo "Found DTB: $DTB_PATH (size: $(stat -c%s "$DTB_PATH") bytes)"
+          echo "DTB_PATH=$DTB_PATH" >> $GITHUB_ENV
 
       - name: Patch Kernel with KernelPatch (KPM)
         if: steps.check_variant.outputs.should_run == 'true' && matrix.variant == 'ksu'
