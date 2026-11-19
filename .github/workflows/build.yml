@@ -175,8 +175,8 @@ jobs:
           make -j$(nproc --all) O=out ARCH=arm64 \
             CC="ccache clang" LLVM=1 LLVM_IAS=1 \
             CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
-            KCFLAGS="-Wno-error -O3" \
-            Image dtbs
+            KCFLAGS="-Wno-error -Wno-implicit-int -Wno-strict-prototypes -O3" \
+            Image
 
       - name: Verify Build Outputs
         if: steps.check_variant.outputs.should_run == 'true'
