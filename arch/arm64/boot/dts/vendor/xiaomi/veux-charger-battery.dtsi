@@ -1,0 +1,254 @@
+/* Xiaomi Poco X4 Pro 5G (veux) - Charger-battery Subsystem */
+
+/* Fragment 39 -> &tlmm */
+&tlmm {
+
+	sc8551_int2_default: sc8551_int2_default {
+
+		config {
+			bias-pull-up;
+			drive-strength = <0x02>;
+			input-enable;
+			pins = "gpio38";
+		};
+
+		mux {
+			function = "gpio";
+			pins = "gpio38";
+		};
+	};
+
+	sc8551_int_default: sc8551_int_default {
+
+		config {
+			bias-pull-up;
+			drive-strength = <0x02>;
+			input-enable;
+			pins = "gpio87";
+		};
+
+		mux {
+			function = "gpio";
+			pins = "gpio87";
+		};
+	};
+};
+
+/* Fragment 40 -> &qupv3_se10_i2c */
+&qupv3_se10_i2c {
+	#address-cells = <0x01>;
+	#size-cells = <0x00>;
+	status = "ok";
+
+	/* Southchip SC8551 67W Turbo Charge pump (Master) at I2C address 0x66 */
+sc8551_master: sc8551-charger@66 {
+		#io-channel-cells = <0x01>;
+		compatible = "sc,sc8551-master";
+		interrupt-parent = <&tlmm>;
+		interrupts = <0x57 0x00>;
+		pinctrl-0 = <&sc8551_int_default>;
+		pinctrl-names = "default";
+		reg = <0x66>;
+		sc,sc8551,ac-ovp-threshold = <0x0d>;
+		sc,sc8551,bat-ocp-alarm-threshold = <0x1d4c>;
+		sc,sc8551,bat-ocp-threshold = <0x1f40>;
+		sc,sc8551,bat-ovp-alarm-threshold = <0x1130>;
+		sc,sc8551,bat-ovp-threshold = <0x11df>;
+		sc,sc8551,bat-therm-disable = <0x00>;
+		sc,sc8551,bat-therm-threshold = <0x15>;
+		sc,sc8551,bat-ucp-alarm-threshold = <0x7d0>;
+		sc,sc8551,bus-ocp-alarm-threshold = <0xdac>;
+		sc,sc8551,bus-ocp-threshold = <0xea6>;
+		sc,sc8551,bus-ovp-alarm-threshold = <0x2af8>;
+		sc,sc8551,bus-ovp-threshold = <0x2ee0>;
+		sc,sc8551,bus-therm-disable = <0x00>;
+		sc,sc8551,bus-therm-threshold = <0x15>;
+		sc,sc8551,die-therm-threshold = <0x7d>;
+		sc,sc8551,sense-resistor-mohm = <0x05>;
+	};
+};
+
+/* Fragment 41 -> &qupv3_se0_i2c */
+&qupv3_se0_i2c {
+	#address-cells = <0x01>;
+	#size-cells = <0x00>;
+	status = "ok";
+
+	/* Southchip SC8551 Charge pump (Slave) at I2C address 0x66 */
+sc8551_slave: sc8551-charger@66 {
+		#io-channel-cells = <0x01>;
+		compatible = "sc,sc8551-slave";
+		inctrl-0 = <&sc8551_int2_default>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <0x26 0x00>;
+		pinctrl-names = "default";
+		reg = <0x66>;
+		sc,sc8551,ac-ovp-threshold = <0x0d>;
+		sc,sc8551,bat-ocp-alarm-threshold = <0x1d4c>;
+		sc,sc8551,bat-ocp-threshold = <0x1f40>;
+		sc,sc8551,bat-ovp-alarm-threshold = <0x1130>;
+		sc,sc8551,bat-ovp-threshold = <0x11df>;
+		sc,sc8551,bat-therm-disable = <0x00>;
+		sc,sc8551,bat-therm-threshold = <0x15>;
+		sc,sc8551,bat-ucp-alarm-threshold = <0x7d0>;
+		sc,sc8551,bus-ocp-alarm-threshold = <0xdac>;
+		sc,sc8551,bus-ocp-threshold = <0xea6>;
+		sc,sc8551,bus-ovp-alarm-threshold = <0x2af8>;
+		sc,sc8551,bus-ovp-threshold = <0x2ee0>;
+		sc,sc8551,bus-therm-disable = <0x00>;
+		sc,sc8551,bus-therm-threshold = <0x15>;
+		sc,sc8551,die-therm-threshold = <0x7d>;
+		sc,sc8551,sense-resistor-mohm = <0x05>;
+	};
+};
+
+/* Fragment 42 -> &tlmm */
+&tlmm {
+
+	ln8000_int2_default: ln8000_int2_default {
+
+		config {
+			bias-pull-up;
+			drive-strength = <0x02>;
+			input-enable;
+			pins = "gpio38";
+		};
+
+		mux {
+			function = "gpio";
+			pins = "gpio38";
+		};
+	};
+
+	ln8000_int_default: ln8000_int_default {
+
+		config {
+			bias-pull-up;
+			drive-strength = <0x02>;
+			input-enable;
+			pins = "gpio87";
+		};
+
+		mux {
+			function = "gpio";
+			pins = "gpio87";
+		};
+	};
+};
+
+/* Fragment 43 -> &qupv3_se10_i2c */
+&qupv3_se10_i2c {
+	#address-cells = <0x01>;
+	#size-cells = <0x00>;
+	status = "ok";
+
+	/* Lion Semiconductor LN8000 switched-capacitor fast charger (Master) at I2C 0x51 */
+ln8000_master: ln8000-charger@51 {
+		#io-channel-cells = <0x01>;
+		compatible = "lionsemi,ln8000";
+		interrupt-parent = <&tlmm>;
+		interrupts = <0x57 0x00>;
+		ln8000_charger,ac-ovp-threshold = <0x0d>;
+		ln8000_charger,bat-ocp-alarm-threshold = <0x1d4c>;
+		ln8000_charger,bat-ocp-threshold = <0x1f40>;
+		ln8000_charger,bat-ovp-alarm-threshold = <0x1130>;
+		ln8000_charger,bat-ovp-threshold = <0x11df>;
+		ln8000_charger,bat-therm-disable = <0x00>;
+		ln8000_charger,bat-therm-threshold = <0x15>;
+		ln8000_charger,bat-ucp-alarm-threshold = <0x7d0>;
+		ln8000_charger,bus-ocp-alarm-threshold = <0xdac>;
+		ln8000_charger,bus-ocp-threshold = <0xea6>;
+		ln8000_charger,bus-ovp-alarm-threshold = <0x2af8>;
+		ln8000_charger,bus-ovp-threshold = <0x3200>;
+		ln8000_charger,bus-therm-disable = <0x00>;
+		ln8000_charger,bus-therm-threshold = <0x15>;
+		ln8000_charger,die-therm-threshold = <0x7d>;
+		ln8000_charger,iin-reg-disable;
+		ln8000_charger,revcurr-prot-disable;
+		ln8000_charger,sense-resistor-mohm = <0x05>;
+		ln8000_charger,tbat-mon-disable;
+		ln8000_charger,tbus-mon-disable;
+		ln8000_charger,tdie-prot-disable;
+		ln8000_charger,tdie-reg-disable;
+		ln8000_charger,vbat-reg-disable;
+		pinctrl-0 = <&ln8000_int_default>;
+		pinctrl-names = "default";
+		reg = <0x51>;
+	};
+};
+
+/* Fragment 44 -> &qupv3_se0_i2c */
+&qupv3_se0_i2c {
+	#address-cells = <0x01>;
+	#size-cells = <0x00>;
+	status = "ok";
+
+	/* Lion Semiconductor LN8000 switched-capacitor fast charger (Slave) at I2C 0x51 */
+ln8000_slave: ln8000-charger@51 {
+		#io-channel-cells = <0x01>;
+		compatible = "lionsemi,ln8000_2";
+		inctrl-0 = <&ln8000_int2_default>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <0x26 0x00>;
+		ln8000_charger,ac-ovp-threshold = <0x0d>;
+		ln8000_charger,bat-ocp-alarm-threshold = <0x1d4c>;
+		ln8000_charger,bat-ocp-threshold = <0x1f40>;
+		ln8000_charger,bat-ovp-alarm-threshold = <0x1130>;
+		ln8000_charger,bat-ovp-threshold = <0x11df>;
+		ln8000_charger,bat-therm-disable = <0x00>;
+		ln8000_charger,bat-therm-threshold = <0x15>;
+		ln8000_charger,bat-ucp-alarm-threshold = <0x7d0>;
+		ln8000_charger,bus-ocp-alarm-threshold = <0xdac>;
+		ln8000_charger,bus-ocp-threshold = <0xea6>;
+		ln8000_charger,bus-ovp-alarm-threshold = <0x2af8>;
+		ln8000_charger,bus-ovp-threshold = <0x3200>;
+		ln8000_charger,bus-therm-disable = <0x00>;
+		ln8000_charger,bus-therm-threshold = <0x15>;
+		ln8000_charger,die-therm-threshold = <0x7d>;
+		ln8000_charger,iin-reg-disable;
+		ln8000_charger,revcurr-prot-disable;
+		ln8000_charger,sense-resistor-mohm = <0x05>;
+		ln8000_charger,tbat-mon-disable;
+		ln8000_charger,tbus-mon-disable;
+		ln8000_charger,tdie-prot-disable;
+		ln8000_charger,tdie-reg-disable;
+		ln8000_charger,vbat-reg-disable;
+		pinctrl-names = "default";
+		reg = <0x51>;
+	};
+};
+
+/* Fragment 51 -> &tlmm */
+&tlmm {
+
+	bq25890_int_default: bq25890_int_default {
+
+		config {
+			bias-pull-up;
+			drive-strength = <0x02>;
+			input-enable;
+			pins = "gpio99";
+		};
+
+		mux {
+			function = "gpio";
+			pins = "gpio99";
+		};
+	};
+};
+
+/* Fragment 53 -> &qupv3_se0_i2c */
+&qupv3_se0_i2c {
+	#address-cells = <0x01>;
+	#size-cells = <0x00>;
+	status = "ok";
+
+	/* Texas Instruments BQ27Z561 fuel gauge at I2C address 0x55 */
+bq27z561_qg: bq27z561@55 {
+		#io-channel-cells = <0x01>;
+		bq,shutdown-delay-enable;
+		bq,soc_decimal_rate = <0x00 0x20 0x0a 0x1e 0x14 0x1c 0x1e 0x1c 0x28 0x1c 0x32 0x1c 0x3c 0x1c 0x46 0x1c 0x50 0x1c 0x5a 0x1a 0x5f 0x0a 0x63 0x05>;
+		compatible = "bq27z561";
+		reg = <0x55>;
+	};
+};

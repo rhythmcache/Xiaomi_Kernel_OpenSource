@@ -1,0 +1,86 @@
+/* Xiaomi Poco X4 Pro 5G (veux) - Fingerprint Subsystem */
+
+/* Fragment 62 -> &soc */
+&soc {
+
+	/* Fingerprint Cards (FPC) FPC1020 / Goodix / Silead side-mounted fingerprint sensor */
+	fpc1020 {
+		compatible = "fpc,fpc1020";
+		fpc,gpio_irq = <&tlmm>, <0x11 0x00>;
+		fpc,gpio_rst = <&tlmm>, <0x12 0x00>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <0x11 0x00>;
+		pinctrl-0 = <&msm_gpio_18>;
+		pinctrl-1 = <&msm_gpio_18_output_high>;
+		pinctrl-2 = <&msm_gpio_17>;
+		pinctrl-names = "fpc1020_reset_reset", "fpc1020_reset_active", "fpc1020_irq_active";
+		status = "ok";
+	};
+
+	goodix_fp {
+		compatible = "goodix,fingerprint";
+		fp-gpio-irq = <&tlmm>, <0x11 0x00>;
+		fp-gpio-reset = <&tlmm>, <0x12 0x00>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <0x11 0x01>;
+		power_enable = <&tlmm>, <0x66 0x00>;
+		status = "okay";
+	};
+
+	gpio_keys {
+		compatible = "gpio-keys";
+		label = "gpio-keys";
+		pinctrl-0 = <&key_vol_up_default>;
+		pinctrl-names = "default";
+
+		vol_up {
+			debounce-interval = <0x0f>;
+			gpio-key,wakeup;
+			gpios = <&pmr735a_gpios>, <0x01 0x01>;
+			label = "volume_up";
+			linux,can-disable;
+			linux,code = <0x73>;
+			linux,input-type = <0x01>;
+		};
+	};
+
+	qcom_cp_manager {
+		compatible = "qcom,cp_manager";
+		io-channel-names = "present_slave", "charging_enabled_slave", "status_slave", "sc_battery_present_slave", "sc_vbus_present_slave", "sc_battery_voltage_slave", "sc_battery_current_slave", "sc_battery_temperature_slave", "sc_bus_voltage_slave", "sc_bus_current_slave", "sc_bus_temperature_slave", "sc_die_temperature_slave", "sc_alarm_status_slave", "sc_fault_status_slave", "sc_vbus_error_status_slave", "present", "charging_enabled", "status", "sc_battery_present", "sc_vbus_present", "sc_battery_voltage", "sc_battery_current", "sc_battery_temperature", "sc_bus_voltage", "sc_bus_current", "sc_bus_temperature", "sc_die_temperature", "sc_alarm_status", "sc_fault_status", "sc_vbus_error_status", "voltage_now", "current_now", "therm_curr", "temp", "cycle_count", "main_chager_hz", "main_input_current_settled", "main_charge_current", "charger_enable", "enable_charger_term", "enable_cp_pd", "ln_present_slave", "ln_charging_enabled_slave", "ln_status_slave", "ln_battery_present_slave", "ln_vbus_present_slave", "ln_battery_voltage_slave", "ln_battery_current_slave", "ln_battery_temperature_slave", "ln_bus_voltage_slave", "ln_bus_current_slave", "ln_bus_temperature_slave", "ln_die_temperature_slave", "ln_alarm_status_slave", "ln_fault_status_slave", "ln_vbus_error_status_slave", "ln_present", "ln_charging_enabled", "ln_status", "ln_battery_present", "ln_vbus_present", "ln_battery_voltage", "ln_battery_current", "ln_battery_temperature", "ln_bus_voltage", "ln_bus_current", "ln_bus_temperature", "ln_die_temperature", "ln_alarm_status", "ln_fault_status", "ln_vbus_error_status", "apdo_max_volt", "apdo_max_curr";
+		io-channels = <&sc8551_slave>, <0x84>, <&sc8551_slave>, <0x76>, <&sc8551_slave>, <0x83>, <&sc8551_slave>, <0x86>, <&sc8551_slave>, <0x87>, <&sc8551_slave>, <0x88>, <&sc8551_slave>, <0x89>, <&sc8551_slave>, <0x8a>, <&sc8551_slave>, <0x8b>, <&sc8551_slave>, <0x8c>, <&sc8551_slave>, <0x8d>, <&sc8551_slave>, <0x8e>, <&sc8551_slave>, <0x8f>, <&sc8551_slave>, <0x85>, <&sc8551_slave>, <0x90>, <&sc8551_master>, <0x84>, <&sc8551_master>, <0x76>, <&sc8551_master>, <0x83>, <&sc8551_master>, <0x86>, <&sc8551_master>, <0x87>, <&sc8551_master>, <0x88>, <&sc8551_master>, <0x89>, <&sc8551_master>, <0x8a>, <&sc8551_master>, <0x8b>, <&sc8551_master>, <0x8c>, <&sc8551_master>, <0x8d>, <&sc8551_master>, <0x8e>, <&sc8551_master>, <0x8f>, <&sc8551_master>, <0x85>, <&sc8551_master>, <0x90>, <&bq27z561_qg>, <0x46>, <&bq27z561_qg>, <0x48>, <&bq27z561_qg>, <0x7a>, <&bq27z561_qg>, <0x45>, <&bq27z561_qg>, <0x52>, <&bq25890_main>, <0x92>, <&bq25890_main>, <0x21>, <&bq25890_main>, <0x94>, <&bq25890_main>, <0x76>, <&bq25890_main>, <0x104>, <&bq25890_main>, <0x106>, <&ln8000_slave>, <0x84>, <&ln8000_slave>, <0x76>, <&ln8000_slave>, <0x83>, <&ln8000_slave>, <0x86>, <&ln8000_slave>, <0x87>, <&ln8000_slave>, <0x88>, <&ln8000_slave>, <0x89>, <&ln8000_slave>, <0x8a>, <&ln8000_slave>, <0x8b>, <&ln8000_slave>, <0x8c>, <&ln8000_slave>, <0x8d>, <&ln8000_slave>, <0x8e>, <&ln8000_slave>, <0x8f>, <&ln8000_slave>, <0x85>, <&ln8000_slave>, <0x90>, <&ln8000_master>, <0x84>, <&ln8000_master>, <0x76>, <&ln8000_master>, <0x83>, <&ln8000_master>, <0x86>, <&ln8000_master>, <0x87>, <&ln8000_master>, <0x88>, <&ln8000_master>, <0x89>, <&ln8000_master>, <0x8a>, <&ln8000_master>, <0x8b>, <&ln8000_master>, <0x8c>, <&ln8000_master>, <0x8d>, <&ln8000_master>, <0x8e>, <&ln8000_master>, <0x8f>, <&ln8000_master>, <0x85>, <&ln8000_master>, <0x90>, <&batt_wt_chg>, <0x100>, <&batt_wt_chg>, <0x101>;
+		status = "okay";
+	};
+
+	batt_wt_chg: qcom_wt_chg {
+		#io-channel-cells = <0x01>;
+		compatible = "qcom,wt_chg";
+		io-channel-names = "main_therm", "slave_therm", "usb_therm", "present", "status", "voltage_now", "voltage_max", "current_now", "capacity", "capacity_level", "temp", "time_to_empty_now", "charge_full", "charge_full_design", "cycle_count", "time_to_full_now", "resistance_id", "update_now", "shutdown_delay", "therm_curr", "chip_ok", "battery_auth", "soc_decimal", "soc_decimal_rate", "battery_id", "rsoc", "fastcharge_mode", "main_chager_hz", "input_voltage_settled", "main_input_current_settled", "main_charge_current", "charger_enable", "otg_enable", "main_charger_term", "batt_voltage_term", "charger_type", "vbus_voltage", "vbat_voltage", "charger_status", "charge_done", "enable_charger_term", "charging_enabled_slave", "present_slave", "sc_bus_voltage_slave", "sc_enable_adc_slave", "sc_bus_current_slave", "charging_enabled", "present", "sc_battery_voltage", "sc_bus_voltage", "sc_enable_adc", "sc_bus_current", "ln_charging_enabled_slave", "ln_present_slave", "ln_bus_voltage_slave", "ln_bus_current_slave", "ln_charging_enabled", "ln_present", "ln_battery_voltage", "ln_bus_voltage", "ln_bus_current";
+		io-channels = <&pmk8350_vadc>, <0x647>, <&pmk8350_vadc>, <0x645>, <&pm6125_vadc>, <0x4e>, <&bq27z561_qg>, <0x84>, <&bq27z561_qg>, <0x83>, <&bq27z561_qg>, <0x46>, <&bq27z561_qg>, <0x2d>, <&bq27z561_qg>, <0x48>, <&bq27z561_qg>, <0x42>, <&bq27z561_qg>, <0x81>, <&bq27z561_qg>, <0x45>, <&bq27z561_qg>, <0x82>, <&bq27z561_qg>, <0x53>, <&bq27z561_qg>, <0x54>, <&bq27z561_qg>, <0x52>, <&bq27z561_qg>, <0x56>, <&bq27z561_qg>, <0x4b>, <&bq27z561_qg>, <0x80>, <&bq27z561_qg>, <0x102>, <&bq27z561_qg>, <0x7a>, <&bq27z561_qg>, <0x96>, <&bq27z561_qg>, <0x97>, <&bq27z561_qg>, <0x98>, <&bq27z561_qg>, <0x90>, <&bq27z561_qg>, <0x9a>, <&bq27z561_qg>, <0x5b>, <&bq27z561_qg>, <0x103>, <&bq25890_main>, <0x92>, <&bq25890_main>, <0x22>, <&bq25890_main>, <0x21>, <&bq25890_main>, <0x94>, <&bq25890_main>, <0x76>, <&bq25890_main>, <0x91>, <&bq25890_main>, <0x93>, <&bq25890_main>, <0x95>, <&bq25890_main>, <0x74>, <&bq25890_main>, <0x8b>, <&bq25890_main>, <0x88>, <&bq25890_main>, <0x1b>, <&bq25890_main>, <0x39>, <&bq25890_main>, <0x104>, <&sc8551_slave>, <0x76>, <&sc8551_slave>, <0x84>, <&sc8551_slave>, <0x8b>, <&sc8551_slave>, <0x105>, <&sc8551_slave>, <0x8c>, <&sc8551_master>, <0x76>, <&sc8551_master>, <0x84>, <&sc8551_master>, <0x88>, <&sc8551_master>, <0x8b>, <&sc8551_master>, <0x105>, <&sc8551_master>, <0x8c>, <&ln8000_slave>, <0x76>, <&ln8000_slave>, <0x84>, <&ln8000_slave>, <0x8b>, <&ln8000_slave>, <0x8c>, <&ln8000_master>, <0x76>, <&ln8000_master>, <0x84>, <&ln8000_master>, <0x88>, <&ln8000_master>, <0x8b>, <&ln8000_master>, <0x8c>;
+		qcom,batt_iterm = <0x3d090>;
+		qcom,fcc-max-ua = <0xbd3580>;
+		qcom,fv-max-uv = <0x4434f0>;
+		status = "okay";
+	};
+
+	silead_fp {
+		avdd-gpios = <&tlmm>, <0x66 0x00>;
+		compatible = "sil,silead_fp";
+		interrupt-parent = <&tlmm>;
+		interrupts = <0x11 0x01>;
+		irq-gpios = <&tlmm>, <0x11 0x00>;
+		panel = <&dsi_k6s_38_0c_0a_fhd_dsc_video>;
+		qcom,qup-id = <0x03>;
+		rst-gpios = <&tlmm>, <0x12 0x00>;
+		status = "ok";
+	};
+
+	simtray {
+		compatible = "xiaomi,simtray-status";
+		status-gpio = <&tlmm>, <0x5e 0x00>;
+	};
+
+	xm_pd_adapter {
+		adapter_name = "pd_adapter";
+		compatible = "xiaomi,pd_adapter";
+	};
+};

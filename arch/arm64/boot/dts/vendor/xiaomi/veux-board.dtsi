@@ -1,0 +1,21 @@
+/* Xiaomi Poco X4 Pro 5G (veux) Board Device Tree Overlay */
+
+&{/} {
+	compatible = "qcom,blair-qrd", "qcom,blair", "qcom,qrd";
+	model = "Qualcomm Technologies, Inc. VEUX QRD NOPMI";
+	qcom,board-id = <0x1000b 0x00>;
+	qcom,msm-id = <0x1fb 0x10000>;
+	qcom,pmic-id = <0x2d 0x00 0x00 0x00>;
+	qcom,pmic-id-size = <0x04>;
+};
+
+/include/ "veux-thermal.dtsi"
+/include/ "veux-display.dtsi"
+/include/ "veux-touch.dtsi"
+/include/ "veux-fingerprint.dtsi"
+/include/ "veux-camera.dtsi"
+/include/ "veux-audio.dtsi"
+/include/ "veux-charger-battery.dtsi"
+/include/ "veux-haptics.dtsi"
+/include/ "veux-nfc.dtsi"
+/include/ "veux-other.dtsi"

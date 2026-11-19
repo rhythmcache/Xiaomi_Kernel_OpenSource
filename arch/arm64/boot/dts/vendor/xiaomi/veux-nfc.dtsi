@@ -1,0 +1,28 @@
+/* Xiaomi Poco X4 Pro 5G (veux) - Nfc Subsystem */
+
+/* Fragment 59 -> &qupv3_se10_i2c */
+&qupv3_se10_i2c {
+	#address-cells = <0x01>;
+	#size-cells = <0x00>;
+	status = "ok";
+
+	/* NXP SN100 NFC controller attached to I2C QUPV3 SE10 */
+		nq@28 {
+		compatible = "qcom,sn-nci";
+		interrupt-names = "nfc_irq";
+		interrupt-parent = <&tlmm>;
+		interrupts = <0x09 0x00>;
+		pinctrl-0 = <&nfc_int_active>, <&nfc_enable_active>, <&nfc_clk_req_active>;
+		pinctrl-1 = <&nfc_int_suspend>, <&nfc_enable_suspend>, <&nfc_clk_req_suspend>;
+		pinctrl-names = "nfc_active", "nfc_suspend";
+		qcom,sn-clkreq = <&tlmm>, <0x07 0x00>;
+		qcom,sn-firm = <&tlmm>, <0x08 0x00>;
+		qcom,sn-irq = <&tlmm>, <0x09 0x00>;
+		qcom,sn-pnven = <&tlmm>, <0x56 0x00>;
+		qcom,sn-vdd-1p8-current = <0x26548>;
+		qcom,sn-vdd-1p8-supply = <&L9A>;
+		qcom,sn-vdd-1p8-voltage = <0x1b7740 0x1b7740>;
+		qcom,sn-ven = <&tlmm>, <0x06 0x00>;
+		reg = <0x28>;
+	};
+};

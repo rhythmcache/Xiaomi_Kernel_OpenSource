@@ -1,0 +1,342 @@
+/* Xiaomi Poco X4 Pro 5G (veux) - Other Subsystem */
+
+/* Fragment 14 -> &gcc */
+&gcc {
+	qcom,critical-devices = <&qupv3_se10_i2c>;
+};
+
+/* Fragment 15 -> &qupv3_se10_i2c */
+&qupv3_se10_i2c {
+	#address-cells = <0x01>;
+	#size-cells = <0x00>;
+	qcom,leica-used-i2c;
+	status = "ok";
+
+	pm8008_8: qcom,pm8008@8 {
+		#address-cells = <0x01>;
+		#size-cells = <0x00>;
+		compatible = "qcom,i2c-pmic";
+		pinctrl-0 = <&pm8008_active>;
+		pinctrl-names = "default";
+		reg = <0x08>;
+		status = "disabled";
+
+		pm8008_chip: qcom,pm8008-chip@900 {
+			compatible = "qcom,pm8008-chip";
+			reg = <0x900>;
+
+			PM8008_EN: qcom,pm8008-chip-en {
+				regulator-name = "pm8008-chip-en";
+			};
+		};
+
+		qcom,revid@100 {
+			compatible = "qcom,qpnp-revid";
+			reg = <0x100>;
+		};
+	};
+
+	pm8008_9: qcom,pm8008@9 {
+		#address-cells = <0x01>;
+		#size-cells = <0x00>;
+		compatible = "qcom,i2c-pmic";
+		reg = <0x09>;
+
+		pm8008_regulators: qcom,pm8008-regulator {
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+			compatible = "qcom,pm8008-regulator";
+			pm8008_en-supply = <&PM8008_EN>;
+			vdd_l1_l2-supply = <&S6A>;
+			vdd_l6-supply = <&S7A>;
+
+			L1P: qcom,pm8008-l1@4000 {
+				qcom,hpm-min-load = <0x00>;
+				qcom,min-dropout-voltage = <0xdac0>;
+				reg = <0x4000>;
+				regulator-max-microvolt = <0x13d620>;
+				regulator-min-microvolt = <0x10c8e0>;
+				regulator-name = "pm8008_l1";
+			};
+
+			L2P: qcom,pm8008-l2@4100 {
+				qcom,hpm-min-load = <0x00>;
+				qcom,min-dropout-voltage = <0x17700>;
+				reg = <0x4100>;
+				regulator-max-microvolt = <0x118c30>;
+				regulator-min-microvolt = <0xe7ef0>;
+				regulator-name = "pm8008_l2";
+			};
+
+			L3P: qcom,pm8008-l3@4200 {
+				qcom,hpm-min-load = <0x00>;
+				qcom,min-dropout-voltage = <0x29040>;
+				reg = <0x4200>;
+				regulator-max-microvolt = <0x2c4020>;
+				regulator-min-microvolt = <0x2932e0>;
+				regulator-name = "pm8008_l3";
+			};
+
+			L4P: qcom,pm8008-l4@4300 {
+				qcom,hpm-min-load = <0x00>;
+				qcom,min-dropout-voltage = <0x21340>;
+				reg = <0x4300>;
+				regulator-max-microvolt = <0x2c4020>;
+				regulator-min-microvolt = <0x2932e0>;
+				regulator-name = "pm8008_l4";
+			};
+
+			L5P: qcom,pm8008-l5@4400 {
+				qcom,hpm-min-load = <0x00>;
+				qcom,min-dropout-voltage = <0x3a980>;
+				reg = <0x4400>;
+				regulator-max-microvolt = <0x2c4020>;
+				regulator-min-microvolt = <0x2932e0>;
+				regulator-name = "pm8008_l5";
+			};
+
+			L6P: qcom,pm8008-l6@4400 {
+				qcom,hpm-min-load = <0x00>;
+				qcom,min-dropout-voltage = <0xbb80>;
+				reg = <0x4500>;
+				regulator-max-microvolt = <0x1cfde0>;
+				regulator-min-microvolt = <0x16e360>;
+				regulator-name = "pm8008_l6";
+			};
+
+			L7P: qcom,pm8008-l7@4400 {
+				qcom,hpm-min-load = <0x00>;
+				qcom,min-dropout-voltage = <0x17700>;
+				reg = <0x4600>;
+				regulator-max-microvolt = <0x2c4020>;
+				regulator-min-microvolt = <0x2932e0>;
+				regulator-name = "pm8008_l7";
+			};
+		};
+	};
+};
+
+/* Fragment 45 -> &qupv3_se10_i2c */
+&qupv3_se10_i2c {
+
+	rt1711h@4e {
+		compatible = "richtek,rt1711h";
+		pinctrl-0 = <&rt1711h_int_n>;
+		pinctrl-names = "default";
+		reg = <0x4e>;
+		rt-tcpc,name = "type_c_port0";
+		rt-tcpc,role_def = <0x05>;
+		rt-tcpc,rp_level = <0x01>;
+		rt-tcpc,vconn_supply = <0x01>;
+		rt1711pd,intr_gpio = <&tlmm>, <0x64 0x00>;
+		rt1711pd,intr_gpio_num = <0x64>;
+		status = "okay";
+		tcpc-dual,supported_modes = <0x00>;
+
+		displayport {
+			1st_connection = "dfp_d";
+			2nd_connection = "dfp_d";
+			signal,dp_v13;
+			typec,receptacle;
+
+			dfp_d {
+				pin_assignment,mode_c;
+				pin_assignment,mode_d;
+				pin_assignment,mode_e;
+			};
+
+			ufp_d {
+			};
+		};
+
+		dpm_caps {
+			attemp_discover_cable;
+			attemp_discover_id;
+			attemp_enter_dp_mode;
+			dr_check = <0x00>;
+			local_dr_data;
+			local_dr_power;
+			local_no_suspend;
+			local_usb_comm;
+			local_vconn_supply;
+			pr_check = <0x00>;
+		};
+
+		pd-data {
+			bat,nr = <0x01>;
+			pd,charging_policy = <0x31>;
+			pd,country_nr = <0x00>;
+			pd,id-vdo-data = <0xd14029cf 0x00 0x17110000 0x41800000 0x00 0x21800000>;
+			pd,id-vdo-size = <0x06>;
+			pd,mfrs = "RichtekTCPC";
+			pd,pid = <0x1711>;
+			pd,sink-pdo-data = <0x190c8>;
+			pd,sink-pdo-size = <0x01>;
+			pd,source-cap-ext = <0x171129cf 0x00 0x00 0x00 0x00 0x2000000>;
+			pd,source-pdo-data = <0x19032>;
+			pd,source-pdo-size = <0x01>;
+			pd,vid = <0x29cf>;
+
+			bat-info0 {
+				bat,design_cap = <0xbb8>;
+				bat,mfrs = "bat1";
+				bat,pid = <0x1711>;
+				bat,vid = <0x29cf>;
+			};
+		};
+	};
+};
+
+/* Fragment 46 -> &soc */
+&soc {
+
+	rpm: rt-pd-manager {
+		#io-channel-cells = <0x01>;
+		compatible = "richtek,rt-pd-manager";
+		io-channel-names = "pd_active", "pd_usb_suspend_supported", "pd_in_hard_reset", "pd_current_max", "pd_voltage_min", "pd_voltage_max", "real_type", "otg_enable", "typec_cc_orientation", "typec_mode";
+		io-channels = <&batt_wt_chg>, <0x04>, <&batt_wt_chg>, <0x1f>, <&batt_wt_chg>, <0x1e>, <&batt_wt_chg>, <0x00>, <&batt_wt_chg>, <0x0c>, <&batt_wt_chg>, <0x0b>, <&batt_wt_chg>, <0x0a>, <&batt_wt_chg>, <0x91>, <&batt_wt_chg>, <0x03>, <&batt_wt_chg>, <0x01>;
+	};
+};
+
+/* Fragment 47 -> &tlmm */
+&tlmm {
+
+	rt1711h_int_n: rt1711h_int_n {
+
+		config {
+			bias-pull-up;
+			drive-strength = <0x02>;
+			pins = "gpio100";
+		};
+
+		mux {
+			function = "gpio";
+			pins = "gpio100";
+		};
+	};
+};
+
+/* Fragment 48 -> &usb0 */
+&usb0 {
+	extcon = <&eud>, <&rpm>;
+};
+
+/* Fragment 54 -> &qupv3_se7_spi */
+&qupv3_se7_spi {
+	status = "ok";
+
+	/* Consumer IR (Infrared) transmitter LED on SPI */
+		irled@0 {
+		compatible = "ir-spi";
+		reg = <0x00>;
+		spi-max-frequency = <0x124f800>;
+	};
+};
+
+/* Fragment 55 -> &sdhc_1 */
+/* eMMC / SDHC controller 1 */
+&sdhc_1 {
+	pinctrl-0 = <&sdc1_on>;
+	pinctrl-1 = <&sdc1_off>;
+	pinctrl-names = "default", "sleep";
+	qcom,vdd-current-level = <0x00 0x8b290>;
+	qcom,vdd-io-always-on;
+	qcom,vdd-io-current-level = <0x00 0x4f588>;
+	qcom,vdd-io-lpm-sup;
+	qcom,vdd-io-voltage-level = <0x1b7740 0x1b7740>;
+	qcom,vdd-voltage-level = <0x2d2a80 0x2d2a80>;
+	status = "ok";
+	vdd-io-supply = <&L11A>;
+	vdd-supply = <&L24A>;
+};
+
+/* Fragment 56 -> &sdhc_2 */
+/* MicroSD card controller 2 */
+&sdhc_2 {
+	cd-gpios = <&tlmm>, <0x5e 0x00>;
+	pinctrl-0 = <&sdc2_on>;
+	pinctrl-1 = <&sdc2_off>;
+	pinctrl-names = "default", "sleep";
+	qcom,vdd-current-level = <0x00 0xc3500>;
+	qcom,vdd-io-current-level = <0x00 0x55f0>;
+	qcom,vdd-io-voltage-level = <0x1b7740 0x2d2a80>;
+	qcom,vdd-voltage-level = <0x2d2a80 0x2d2a80>;
+	status = "ok";
+	vdd-io-supply = <&L5A>;
+	vdd-supply = <&L22A>;
+};
+
+/* Fragment 57 -> &ufsphy_mem */
+&ufsphy_mem {
+	compatible = "qcom,ufs-phy-qmp-v4-yupik";
+	status = "ok";
+	vdda-phy-max-microamp = <0x14ec4>;
+	vdda-phy-supply = <&L7A>;
+	vdda-pll-max-microamp = <0x477c>;
+	vdda-pll-supply = <&L4A>;
+};
+
+/* Fragment 58 -> &ufshc_mem */
+/* Universal Flash Storage (UFS) 2.2 host controller */
+&ufshc_mem {
+	qcom,vddp-ref-clk-max-microamp = <0x64>;
+	qcom,vddp-ref-clk-supply = <&L4A>;
+	status = "ok";
+	vcc-max-microamp = "", "\f5";
+	vcc-supply = <&L24A>;
+	vcc-voltage-level = <0x2d0370 0x2d2a80>;
+	vccq2-max-microamp = "", "\f5";
+	vccq2-supply = <&L11A>;
+	vccq2-voltage-level = <0x1b7740 0x1b7740>;
+	vdd-hba-fixed-regulator;
+	vdd-hba-supply = <&gcc_ufs_phy_gdsc>;
+};
+
+/* Fragment 61 -> &tlmm */
+&tlmm {
+
+	msm_gpio_17: msm_gpio_17 {
+
+		config {
+			bias-pull-up;
+			drive-strength = <0x02>;
+			input-enable;
+			pins = "gpio17";
+		};
+
+		mux {
+			function = "gpio";
+			pins = "gpio17";
+		};
+	};
+
+	msm_gpio_18: msm_gpio_18 {
+
+		config {
+			bias-disable;
+			drive-strength = <0x02>;
+			output-low;
+			pins = "gpio18";
+		};
+
+		mux {
+			function = "gpio";
+			pins = "gpio18";
+		};
+	};
+
+	msm_gpio_18_output_high: msm_gpio_18_output_high {
+
+		config {
+			bias-disable;
+			drive-strength = <0x02>;
+			output-high;
+			pins = "gpio18";
+		};
+
+		mux {
+			function = "gpio";
+			pins = "gpio18";
+		};
+	};
+};

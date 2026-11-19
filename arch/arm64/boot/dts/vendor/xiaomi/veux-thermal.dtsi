@@ -1,0 +1,1145 @@
+/* Xiaomi Poco X4 Pro 5G (veux) - Thermal Subsystem */
+
+/* Fragment 6 -> &spmi_bus */
+&spmi_bus {
+	#address-cells = <0x02>;
+	#interrupt-cells = <0x04>;
+	#size-cells = <0x00>;
+	interrupt-controller;
+
+	qcom,pm6125@0 {
+		#address-cells = <0x01>;
+		#size-cells = <0x00>;
+		compatible = "qcom,spmi-pmic";
+		reg = <0x00 0x00>;
+
+		pm6125_adc_tm: adc_tm@3500 {
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+			#thermal-sensor-cells = <0x01>;
+			compatible = "qcom,adc-tm5";
+			interrupt-names = "threshold";
+			interrupts = <0x00 0x35 0x00 0x01>;
+			io-channels = <&pm6125_vadc>, <0x55>, <&pm6125_vadc>, <0x4d>, <&pm6125_vadc>, <0x54>, <&pm6125_vadc>, <0x4e>;
+			reg = <0x3500>;
+
+			pa_therm1 {
+				qcom,hw-settle-time = <0xc8>;
+				qcom,ratiometric;
+				reg = <0x4d>;
+			};
+
+			pa_therm2 {
+				qcom,hw-settle-time = <0xc8>;
+				qcom,ratiometric;
+				reg = <0x55>;
+			};
+
+			quiet_therm {
+				qcom,hw-settle-time = <0xc8>;
+				qcom,ratiometric;
+				reg = <0x4e>;
+			};
+
+			rear_cam_flash_therm {
+				qcom,hw-settle-time = <0xc8>;
+				qcom,ratiometric;
+				reg = <0x54>;
+			};
+		};
+
+		pm6125_clkdiv: clock-controller@5b00 {
+			#clock-cells = <0x01>;
+			clock-names = "xo";
+			clock-output-names = "pm6125_div_clk1";
+			clocks = <&rpmcc>, <0x00>;
+			compatible = "qcom,spmi-clkdiv";
+			qcom,num-clkdivs = <0x01>;
+			reg = <0x5b00>;
+		};
+
+		pm6125_gpios: pinctrl@c000 {
+			#gpio-cells = <0x02>;
+			compatible = "qcom,pm6125-gpio";
+			gpio-controller;
+			interrupt-cells = <0x02>;
+			interrupt-controller;
+			reg = <0xc000>;
+
+			msm_therm {
+
+				msm_therm_default: msm_therm_default {
+					bias-high-impedance;
+					pins = "gpio3";
+				};
+			};
+
+			pa_therm2 {
+
+				pa_therm2_default: pa_therm2_default {
+					bias-high-impedance;
+					pins = "gpio7";
+				};
+			};
+
+			rear_cam_flash_therm {
+
+				rear_cam_flash_therm_default: rear_cam_flash_therm_default {
+					bias-high-impedance;
+					pins = "gpio6";
+				};
+			};
+
+			rfc_cam_therm {
+
+				rfc_cam_therm_default: rfc_cam_therm_default {
+					bias-high-impedance;
+					pins = "gpio4";
+				};
+			};
+		};
+
+		pm6125_rtc: qcom,pm6125_rtc {
+			compatible = "qcom,pm8941-rtc";
+			interrupts = <0x00 0x61 0x01 0x00>;
+		};
+
+		pm6125_pon: qcom,power-on@800 {
+			compatible = "qcom,qpnp-power-on";
+			interrupt-names = "kpdpwr", "resin";
+			interrupts = <0x00 0x08 0x00 0x03 0x00 0x08 0x01 0x03>;
+			qcom,kpdpwr-sw-debounce;
+			qcom,log-kpd-event;
+			qcom,pon-dbc-delay = <0x3d09>;
+			qcom,store-hard-reset-reason;
+			qcom,system-reset;
+			reg = <0x800>;
+
+			qcom,pon_1 {
+				linux,code = <0x74>;
+				qcom,pon-type = <0x00>;
+				qcom,pull-up;
+				qcom,s1-timer = <0x1180>;
+				qcom,s2-timer = <0x7d0>;
+				qcom,s2-type = <0x07>;
+				qcom,support-reset = <0x01>;
+			};
+
+			qcom,pon_2 {
+				linux,code = <0x72>;
+				qcom,pon-type = <0x01>;
+				qcom,pull-up;
+			};
+		};
+
+		pm6125_tz: qcom,temp-alarm@2400 {
+			#thermal-sensor-cells = <0x00>;
+			compatible = "qcom,spmi-temp-alarm";
+			interrupts = <0x00 0x24 0x00 0x03>;
+			io-channel-names = "thermal";
+			io-channels = <&pm6125_vadc>, <0x06>;
+			reg = <0x2400>;
+		};
+
+		pm6125_vadc: vadc@3100 {
+			#address-cells = <0x01>;
+			#io-channel-cells = <0x01>;
+			#size-cells = <0x00>;
+			compatible = "qcom,spmi-adc5";
+			interrupt-names = "eoc-int-en-set";
+			interrupts = <0x00 0x31 0x00 0x01>;
+			io-channel-ranges;
+			pinctrl-0 = <&pa_therm2_default>, <&msm_therm_default>, <&rfc_cam_therm_default>, <&rear_cam_flash_therm_default>;
+			pinctrl-names = "default";
+			reg = <0x3100>;
+
+			die_temp {
+				label = "die_temp";
+				qcom,pre-scaling = <0x01 0x01>;
+				reg = <0x06>;
+			};
+
+			msm_therm {
+				label = "msm_therm";
+				qcom,hw-settle-time = <0xc8>;
+				qcom,pre-scaling = <0x01 0x01>;
+				qcom,ratiometric;
+				reg = <0x52>;
+			};
+
+			pa_therm1 {
+				label = "pa_therm1";
+				qcom,hw-settle-time = <0xc8>;
+				qcom,pre-scaling = <0x01 0x01>;
+				qcom,ratiometric;
+				reg = <0x4d>;
+			};
+
+			pa_therm2 {
+				label = "pa_therm2";
+				qcom,hw-settle-time = <0xc8>;
+				qcom,pre-scaling = <0x01 0x01>;
+				qcom,ratiometric;
+				reg = <0x55>;
+			};
+
+			quiet_therm {
+				label = "quiet_therm";
+				qcom,hw-settle-time = <0xc8>;
+				qcom,pre-scaling = <0x01 0x01>;
+				qcom,ratiometric;
+				reg = <0x4e>;
+			};
+
+			rear_cam_flash_therm {
+				label = "rear_cam_flash_therm";
+				qcom,hw-settle-time = <0xc8>;
+				qcom,pre-scaling = <0x01 0x01>;
+				qcom,ratiometric;
+				reg = <0x54>;
+			};
+
+			ref_gnd {
+				label = "ref_gnd";
+				qcom,pre-scaling = <0x01 0x01>;
+				reg = <0x00>;
+			};
+
+			rfc_cam_therm {
+				label = "rfc_cam_therm";
+				qcom,hw-settle-time = <0xc8>;
+				qcom,pre-scaling = <0x01 0x01>;
+				qcom,ratiometric;
+				reg = <0x53>;
+			};
+
+			usb_therm {
+				label = "usb_therm";
+				qcom,hw-settle-time = <0xc8>;
+				qcom,pre-scaling = <0x01 0x01>;
+				qcom,ratiometric;
+				reg = <0x4e>;
+			};
+
+			vph_pwr {
+				label = "vph_pwr";
+				qcom,pre-scaling = <0x01 0x03>;
+				reg = <0x83>;
+			};
+
+			vref_1p25 {
+				label = "vref_1p25";
+				qcom,pre-scaling = <0x01 0x01>;
+				reg = <0x01>;
+			};
+		};
+	};
+
+	qcom,pm6125@1 {
+		#address-cells = <0x01>;
+		#size-cells = <0x00>;
+		compatible = "qcom,spmi-pmic";
+		reg = <0x01 0x00>;
+
+		pm6125_pwm: qcom,pwms@b300 {
+			#pwm-cells = <0x02>;
+			compatible = "qcom,pwm-lpg";
+			qcom,num-lpg-channels = <0x01>;
+			reg = <0xb300>;
+			reg-names = "lpg-base";
+			status = "disabled";
+		};
+	};
+};
+
+/* Fragment 7 -> &thermal_zones */
+&thermal_zones {
+
+	/* PM6125 PMIC thermal monitor zone and cooling trips */
+	pm6125_tz {
+		polling-delay = <0x00>;
+		polling-delay-passive = <0x64>;
+		thermal-governor = "step_wise";
+		thermal-sensors = <&pm6125_tz>;
+
+		trips {
+
+			pm6125_trip0: trip0 {
+				hysteresis = <0x00>;
+				temperature = <0x17318>;
+				type = "passive";
+			};
+
+			pm6125_trip1: trip1 {
+				hysteresis = <0x00>;
+				temperature = <0x1c138>;
+				type = "critical";
+			};
+
+			pm6125_trip2: trip2 {
+				hysteresis = <0x00>;
+				temperature = <0x23668>;
+				type = "critical";
+			};
+		};
+	};
+};
+
+/* Fragment 8 -> &spmi_bus */
+&spmi_bus {
+	#address-cells = <0x02>;
+	#interrupt-cells = <0x04>;
+	#size-cells = <0x00>;
+	interrupt-controller;
+
+	qcom,pmr735a@4 {
+		#address-cells = <0x01>;
+		#size-cells = <0x00>;
+		compatible = "qcom,spmi-pmic";
+		reg = <0x04 0x00>;
+
+		pmr735a_gpios: pinctrl@8800 {
+			#gpio-cells = <0x02>;
+			#interrupt-cells = <0x02>;
+			compatible = "qcom,pmr735a-gpio";
+			gpio-controller;
+			interrupt-controller;
+			reg = <0x8800>;
+
+			disp_pins {
+
+				disp_pins_reset: disp_pins_reset {
+					bias-disable;
+					function = "func1";
+					output-low;
+					pins = "gpio2";
+					power-source = <0x01>;
+					qcom,drive-strength = <0x02>;
+				};
+			};
+
+			key_vol_up {
+
+				key_vol_up_default: key_vol_up_default {
+					bias-pull-up;
+					function = "normal";
+					input-enable;
+					pins = "gpio1";
+					power-source = <0x01>;
+				};
+			};
+		};
+
+		pmr735a_tz: qcom,temp-alarm@a00 {
+			#thermal-sensor-cells = <0x00>;
+			compatible = "qcom,spmi-temp-alarm";
+			interrupts = <0x04 0x0a 0x00 0x03>;
+			reg = <0xa00>;
+		};
+	};
+};
+
+/* Fragment 9 -> &thermal_zones */
+&thermal_zones {
+
+	pmr735a_temp_alarm: pmr735a_tz {
+		polling-delay = <0x00>;
+		polling-delay-passive = <0x64>;
+		thermal-governor = "step_wise";
+		thermal-sensors = <&pmr735a_tz>;
+
+		trips {
+
+			pmr735a_trip0: trip0 {
+				hysteresis = <0x00>;
+				temperature = <0x17318>;
+				type = "passive";
+			};
+
+			pmr735a_trip1: trip1 {
+				hysteresis = <0x00>;
+				temperature = <0x1c138>;
+				type = "critical";
+			};
+
+			pmr735a_trip2: trip2 {
+				hysteresis = <0x00>;
+				temperature = <0x23668>;
+				type = "critical";
+			};
+		};
+	};
+};
+
+/* Fragment 10 -> &spmi_bus */
+&spmi_bus {
+	#address-cells = <0x02>;
+	#interrupt-cells = <0x04>;
+	#size-cells = <0x00>;
+	interrupt-controller;
+
+	pmk8350: qcom,pmk8350@0 {
+		#address-cells = <0x01>;
+		#size-cells = <0x00>;
+		compatible = "qcom,spmi-pmic";
+		reg = <0x06 0x00>;
+
+		pmk8350_adc_tm: adc_tm@3400 {
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+			#thermal-sensor-cells = <0x01>;
+			compatible = "qcom,adc-tm7";
+			interrupt-names = "threshold";
+			interrupts = <0x06 0x34 0x00 0x01>;
+			io-channels = <&pmk8350_vadc>, <0x644>, <&pmk8350_vadc>, <0x647>, <&pmk8350_vadc>, <0x645>;
+			reg = <0x3400>;
+
+			charge_main {
+				qcom,hw-settle-time = <0xc8>;
+				qcom,ratiometric;
+				reg = <0x647>;
+			};
+
+			charge_slave {
+				qcom,hw-settle-time = <0xc8>;
+				qcom,ratiometric;
+				reg = <0x645>;
+			};
+
+			xo_therm {
+				qcom,hw-settle-time = <0xc8>;
+				qcom,ratiometric;
+				reg = <0x644>;
+			};
+		};
+
+		pmk8350_gpios: pinctrl@b000 {
+			#gpio-cells = <0x02>;
+			#interrupt-cells = <0x02>;
+			compatible = "qcom,pmk8350-gpio";
+			gpio-controller;
+			interrupt-controller;
+			reg = <0xb000>;
+		};
+
+		pon_hlos@1300 {
+			compatible = "qcom,qpnp-power-on";
+			interrupt-names = "kpdpwr", "resin";
+			interrupts = <0x00 0x13 0x07 0x03 0x00 0x13 0x06 0x03>;
+			qcom,kpdpwr-sw-debounce;
+			reg = <0x1300 0x800>;
+			reg-names = "pon_hlos", "pon_pbs";
+			status = "disabled";
+
+			qcom,pon_1 {
+				linux,code = <0x74>;
+				qcom,pon-type = <0x00>;
+			};
+
+			qcom,pon_2 {
+				linux,code = <0x72>;
+				qcom,pon-type = <0x01>;
+			};
+		};
+
+		pon_pbs@800 {
+			compatible = "qcom,qpnp-power-on";
+			qcom,store-hard-reset-reason;
+			qcom,system-reset;
+			reg = <0x800>;
+			status = "disabled";
+		};
+
+		pmk8350_rtc: rtc@6100 {
+			compatible = "qcom,pmk8350-rtc";
+			interrupts = <0x06 0x62 0x01 0x01>;
+			reg = <0x6100 0x6200>;
+			reg-names = "rtc", "alarm";
+		};
+
+		pmk8350_sdam_2: sdam@7100 {
+			#address-cells = <0x01>;
+			#size-cells = <0x01>;
+			compatible = "qcom,spmi-sdam";
+			reg = <0x7100>;
+
+			restart_reason: restart@48 {
+				bits = <0x01 0x07>;
+				reg = <0x48 0x01>;
+			};
+		};
+
+		pmk8350_sdam_5: sdam@7400 {
+			compatible = "qcom,spmi-sdam";
+			reg = <0x7400>;
+		};
+
+		pmk8350_sdam_13: sdam@7c00 {
+			compatible = "qcom,spmi-sdam";
+			reg = <0x7c00>;
+		};
+
+		pmk8350_sdam_14: sdam@7d00 {
+			compatible = "qcom,spmi-sdam";
+			reg = <0x7d00>;
+		};
+
+		pmk8350_sdam_21: sdam@8400 {
+			compatible = "qcom,spmi-sdam";
+			reg = <0x8400>;
+		};
+
+		pmk8350_sdam_22: sdam@8500 {
+			compatible = "qcom,spmi-sdam";
+			reg = <0x8500>;
+		};
+
+		pmk8350_sdam_23: sdam@8600 {
+			#address-cells = <0x01>;
+			#size-cells = <0x01>;
+			compatible = "qcom,spmi-sdam";
+			reg = <0x8600>;
+		};
+
+		pmk8350_sdam_46: sdam@9d00 {
+			compatible = "qcom,spmi-sdam";
+			reg = <0x9d00>;
+		};
+
+		pmk8350_vadc: vadc@3100 {
+			#address-cells = <0x01>;
+			#io-channel-cells = <0x01>;
+			#size-cells = <0x00>;
+			compatible = "qcom,spmi-adc7";
+			interrupt-names = "eoc-int-en-set";
+			interrupts = <0x06 0x31 0x00 0x01>;
+			io-channel-ranges;
+			reg = <0x3100>;
+
+			pmk8350_die_temp {
+				label = "pmk8350_die_temp";
+				qcom,pre-scaling = <0x01 0x01>;
+				reg = <0x603>;
+			};
+
+			pmk8350_main_therm {
+				label = "pmk8350_main_therm";
+				qcom,hw-settle-time = <0xc8>;
+				qcom,pre-scaling = <0x01 0x01>;
+				qcom,ratiometric;
+				reg = <0x647>;
+			};
+
+			pmk8350_ref_gnd {
+				label = "pmk8350_ref_gnd";
+				qcom,pre-scaling = <0x01 0x01>;
+				reg = <0x600>;
+			};
+
+			pmk8350_slave_therm {
+				label = "pmk8350_slave_therm";
+				qcom,hw-settle-time = <0xc8>;
+				qcom,pre-scaling = <0x01 0x01>;
+				qcom,ratiometric;
+				reg = <0x645>;
+			};
+
+			pmk8350_vref_1p25 {
+				label = "pmk8350_vref_1p25";
+				qcom,pre-scaling = <0x01 0x01>;
+				reg = <0x601>;
+			};
+
+			pmk8350_xo_therm {
+				label = "pmk8350_xo_therm";
+				qcom,hw-settle-time = <0xc8>;
+				qcom,pre-scaling = <0x01 0x01>;
+				qcom,ratiometric;
+				reg = <0x644>;
+			};
+		};
+	};
+};
+
+/* Fragment 11 -> &spmi_bus */
+&spmi_bus {
+
+	qcom,pmr735a@4 {
+
+		pmr735a_vadc: vadc@3600 {
+			#address-cells = <0x01>;
+			#io-channel-cells = <0x01>;
+			#size-cells = <0x00>;
+			compatible = "qcom,spmi-adc7-sw-calib";
+			interrupt-names = "eoc";
+			interrupts = <0x04 0x36 0x00 0x01>;
+			io-channel-ranges;
+			reg = <0x3600 0x3900>;
+			reg-names = "adc5-sw-calib-pbs-base", "adc5-sw-calib-cmn-base";
+			status = "disabled";
+
+			pmr735a_die_temp {
+				label = "pmr735a_die_temp";
+				qcom,pre-scaling = <0x01 0x01>;
+				reg = <0x03>;
+			};
+
+			pmr735a_ref_gnd {
+				label = "pmr735a_ref_gnd";
+				qcom,no-cal;
+				qcom,pre-scaling = <0x01 0x01>;
+				reg = <0x00>;
+			};
+
+			pmr735a_vref_1p25 {
+				label = "pmr735a_vref_1p25";
+				qcom,no-cal;
+				qcom,pre-scaling = <0x01 0x01>;
+				reg = <0x01>;
+			};
+
+			pmr735a_vref_vdd {
+				label = "pmr735a_vref_vdd";
+				qcom,no-cal;
+				qcom,pre-scaling = <0x01 0x01>;
+				reg = <0x02>;
+			};
+		};
+	};
+};
+
+/* Fragment 12 -> &spmi_bus */
+&spmi_bus {
+
+	qcom,pm6125@0 {
+
+		pm6125_adc_tm_iio: adc_tm@3400 {
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+			#thermal-sensor-cells = <0x01>;
+			compatible = "qcom,adc-tm5-iio";
+			io-channels = <&pm6125_vadc>, <0x52>, <&pm6125_vadc>, <0x53>;
+			reg = <0x3400>;
+
+			msm_therm {
+				qcom,hw-settle-time = <0xc8>;
+				qcom,ratiometric;
+				reg = <0x52>;
+			};
+
+			rfc_cam_therm {
+				qcom,hw-settle-time = <0xc8>;
+				qcom,ratiometric;
+				reg = <0x53>;
+			};
+		};
+	};
+};
+
+/* Fragment 13 -> &thermal_zones */
+&thermal_zones {
+
+	/* Thermal sensor zone for camera module temperature */
+	camera-therm-usr {
+		polling-delay = <0x00>;
+		polling-delay-passive = <0x00>;
+		thermal-governor = "user_space";
+		thermal-sensors = <&pm6125_adc_tm>, <0x54>;
+		wake-capable-sensor;
+
+		trips {
+
+			active-config0 {
+				hysteresis = <0x3e8>;
+				temperature = <0x1e848>;
+				type = "passive";
+			};
+		};
+	};
+
+	pa-therm0-usr {
+		polling-delay = <0x00>;
+		polling-delay-passive = <0x00>;
+		thermal-governor = "user_space";
+		thermal-sensors = <&pm6125_adc_tm>, <0x4d>;
+		wake-capable-sensor;
+
+		trips {
+
+			active-config0 {
+				hysteresis = <0x3e8>;
+				temperature = <0x1e848>;
+				type = "passive";
+			};
+		};
+	};
+
+	pa-therm1-usr {
+		polling-delay = <0x00>;
+		polling-delay-passive = <0x00>;
+		thermal-governor = "user_space";
+		thermal-sensors = <&pm6125_adc_tm>, <0x55>;
+		wake-capable-sensor;
+
+		trips {
+
+			active-config0 {
+				hysteresis = <0x3e8>;
+				temperature = <0x1e848>;
+				type = "passive";
+			};
+		};
+	};
+
+	quiet-therm-usr {
+		polling-delay = <0x00>;
+		polling-delay-passive = <0x00>;
+		thermal-governor = "user_space";
+		thermal-sensors = <&pm6125_adc_tm>, <0x4e>;
+		wake-capable-sensor;
+
+		trips {
+
+			active-config0 {
+				hysteresis = <0x3e8>;
+				temperature = <0x1e848>;
+				type = "passive";
+			};
+
+			active-config1 {
+				hysteresis = <0x3e8>;
+				temperature = <0x1e848>;
+				type = "passive";
+			};
+		};
+	};
+
+	rear-cam-therm-usr {
+		polling-delay = <0x00>;
+		polling-delay-passive = <0x00>;
+		thermal-governor = "user_space";
+		thermal-sensors = <&pm6125_adc_tm_iio>, <0x53>;
+		wake-capable-sensor;
+
+		trips {
+
+			active-config0 {
+				hysteresis = <0x3e8>;
+				temperature = <0x1e848>;
+				type = "passive";
+			};
+		};
+	};
+
+	sdm-skin-therm-usr {
+		polling-delay = <0x00>;
+		polling-delay-passive = <0x00>;
+		thermal-governor = "user_space";
+		thermal-sensors = <&pm6125_adc_tm_iio>, <0x52>;
+		wake-capable-sensor;
+
+		trips {
+
+			active-config0 {
+				hysteresis = <0x3e8>;
+				temperature = <0x1e848>;
+				type = "passive";
+			};
+		};
+	};
+
+	xo-therm-usr {
+		polling-delay = <0x00>;
+		polling-delay-passive = <0x00>;
+		thermal-governor = "user_space";
+		thermal-sensors = <&pmk8350_adc_tm>, <0x644>;
+		wake-capable-sensor;
+
+		trips {
+
+			active-config0 {
+				hysteresis = <0x3e8>;
+				temperature = <0x1e848>;
+				type = "passive";
+			};
+		};
+	};
+};
+
+/* Fragment 37 -> &cxip_cdev */
+&cxip_cdev {
+	status = "ok";
+};
+
+/* Fragment 38 -> &thermal_zones */
+&thermal_zones {
+
+	pm6125_tz {
+		disable-thermal-zone;
+		status = "disabled";
+
+		cooling-maps {
+
+			trip0_cpu6 {
+				cooling-device = <&CPU6>, <0xfffffffe 0xfffffffe>;
+				trip = <&pm6125_trip0>;
+			};
+
+			trip1_cpu4 {
+				cooling-device = <&cpu4_isolate>, <0x01 0x01>;
+				trip = <&pm6125_trip0>;
+			};
+
+			trip1_cpu5 {
+				cooling-device = <&cpu5_isolate>, <0x01 0x01>;
+				trip = <&pm6125_trip0>;
+			};
+
+			trip1_cpu6 {
+				cooling-device = <&cpu6_isolate>, <0x01 0x01>;
+				trip = <&pm6125_trip0>;
+			};
+
+			trip1_cpu7 {
+				cooling-device = <&cpu7_isolate>, <0x01 0x01>;
+				trip = <&pm6125_trip0>;
+			};
+		};
+	};
+
+	pmr735a_tz {
+		disable-thermal-zone;
+		status = "disabled";
+
+		cooling-maps {
+
+			trip0_modem_pa {
+				cooling-device = <&modem_pa>, <0xfffffffe 0xfffffffe>;
+				trip = <&pmr735a_trip0>;
+			};
+
+			trip0_modem_tj {
+				cooling-device = <&modem_tj>, <0xfffffffe 0xfffffffe>;
+				trip = <&pmr735a_trip0>;
+			};
+		};
+	};
+};
+
+/* Fragment 63 -> &thermal_zones */
+&thermal_zones {
+
+	/* Thermal sensor zone for fast charging circuit temperature monitoring */
+	charge-main-usr {
+		polling-delay = <0x00>;
+		polling-delay-passive = <0x00>;
+		thermal-governor = "user_space";
+		thermal-sensors = <&pmk8350_adc_tm>, <0x645>;
+		wake-capable-sensor;
+
+		trips {
+
+			active-config0 {
+				hysteresis = <0x3e8>;
+				temperature = <0x1e848>;
+				type = "passive";
+			};
+		};
+	};
+
+	charge-slave-usr {
+		polling-delay = <0x00>;
+		polling-delay-passive = <0x00>;
+		thermal-governor = "user_space";
+		thermal-sensors = <&pmk8350_adc_tm>, <0x647>;
+		wake-capable-sensor;
+
+		trips {
+
+			active-config0 {
+				hysteresis = <0x3e8>;
+				temperature = <0x1e848>;
+				type = "passive";
+			};
+		};
+	};
+
+	pa-therm0-step {
+		disable-thermal-zone;
+		polling-delay = <0x00>;
+		polling-delay-passive = <0x00>;
+		status = "disabled";
+		thermal-governor = "step_wise";
+		thermal-sensors = <&pm6125_adc_tm>, <0x4d>;
+
+		cooling-maps {
+
+			modem-cdev0 {
+				cooling-device = <&modem_pa>, <0x01 0x01>;
+				trip = <&modem_trip0>;
+			};
+
+			modem-cdev1 {
+				cooling-device = <&modem_pa>, <0x02 0x02>;
+				trip = <&modem_trip1>;
+			};
+
+			modem-cdev2 {
+				cooling-device = <&modem_pa>, <0x03 0x03>;
+				trip = <&modem_trip2>;
+			};
+		};
+
+		trips {
+
+			modem_trip0: modem-trip0 {
+				hysteresis = <0xfa0>;
+				temperature = <0xb3b0>;
+				type = "passive";
+			};
+
+			modem_trip1: modem-trip1 {
+				hysteresis = <0xfa0>;
+				temperature = <0xb798>;
+				type = "passive";
+			};
+
+			modem_trip2: modem-trip2 {
+				hysteresis = <0xfa0>;
+				temperature = <0xd2f0>;
+				type = "passive";
+			};
+		};
+	};
+
+	quiet-therm-step {
+		disable-thermal-zone;
+		polling-delay = <0x00>;
+		polling-delay-passive = <0x7d0>;
+		status = "disabled";
+		thermal-governor = "step_wise";
+		thermal-sensors = <&pm6125_adc_tm>, <0x4e>;
+
+		cooling-maps {
+
+			cdsp-cdev {
+				cooling-device = <&cdsp_sw>, <0x04 0x04>;
+				trip = <&cx_trip>;
+			};
+
+			gold-cdev {
+				cooling-device = <&CPU6>, <0xfffffff9 0xfffffff9>;
+				trip = <&gold_trip>;
+			};
+
+			gpu-cdev0 {
+				cooling-device = <&msm_gpu>, <0xfffffffa 0xfffffffa>;
+				trip = <&modem_skin_trip1>;
+			};
+
+			gpu-cdev1 {
+				cooling-device = <&msm_gpu>, <0xfffffffb 0xfffffffb>;
+				trip = <&cx_trip>;
+			};
+
+			modem-skin-cdev0 {
+				cooling-device = <&modem_skin>, <0x01 0x01>;
+				trip = <&modem_skin_trip0>;
+			};
+
+			modem-skin-cdev1 {
+				cooling-device = <&modem_skin>, <0x02 0x02>;
+				trip = <&modem_skin_trip1>;
+			};
+
+			modem-skin-cdev2 {
+				cooling-device = <&modem_skin>, <0x03 0x03>;
+				trip = <&cx_trip>;
+			};
+
+			silver-cdev {
+				cooling-device = <&CPU0>, <0xfffffff8 0xfffffff8>;
+				trip = <&silver_trip>;
+			};
+		};
+
+		trips {
+
+			battery_trip0: battery-trip0 {
+				hysteresis = <0x7d0>;
+				temperature = <0xa410>;
+				type = "passive";
+			};
+
+			battery_trip1: battery-trip1 {
+				hysteresis = <0x7d0>;
+				temperature = <0xabe0>;
+				type = "passive";
+			};
+
+			battery_trip2: battery-trip2 {
+				hysteresis = <0x7d0>;
+				temperature = <0xb3b0>;
+				type = "passive";
+			};
+
+			battery_trip3: battery-trip3 {
+				hysteresis = <0x3e8>;
+				temperature = <0xb798>;
+				type = "passive";
+			};
+
+			battery_trip4: battery-trip4 {
+				hysteresis = <0x3e8>;
+				temperature = <0xbb80>;
+				type = "passive";
+			};
+
+			cx_trip: cx-trip {
+				hysteresis = <0x1388>;
+				temperature = <0xd6d8>;
+				type = "passive";
+			};
+
+			gold_trip: gold-trip {
+				hysteresis = <0x00>;
+				temperature = <0xa7f8>;
+				type = "passive";
+			};
+
+			modem_skin_trip0: modem-skin-trip0 {
+				hysteresis = <0xfa0>;
+				temperature = <0xa410>;
+				type = "passive";
+			};
+
+			modem_skin_trip1: modem-skin-trip1 {
+				hysteresis = <0xfa0>;
+				temperature = <0xabe0>;
+				type = "passive";
+			};
+
+			silver_trip: silver-trip {
+				hysteresis = <0x00>;
+				temperature = <0xafc8>;
+				type = "passive";
+			};
+		};
+	};
+
+	xo-therm-step {
+		disable-thermal-zone;
+		polling-delay = <0x00>;
+		polling-delay-passive = <0x00>;
+		status = "disabled";
+		thermal-governor = "step_wise";
+		thermal-sensors = <&pmk8350_adc_tm>, <0x644>;
+
+		cooling-maps {
+
+			modem_pa_fr1_cdev0 {
+				cooling-device = <&modem_pa_fr1>, <0x01 0x01>;
+				trip = <&modem_pa_fr1_trip0>;
+			};
+
+			modem_pa_fr1_cdev1 {
+				cooling-device = <&modem_pa_fr1>, <0x02 0x02>;
+				trip = <&modem_pa_fr1_trip1>;
+			};
+
+			modem_pa_fr1_cdev2 {
+				cooling-device = <&modem_pa_fr1>, <0x03 0x03>;
+				trip = <&modem_pa_fr1_trip2>;
+			};
+		};
+
+		trips {
+
+			modem_pa_fr1_trip0: modem-pa-fr1-trip0 {
+				hysteresis = <0xfa0>;
+				temperature = <0xafc8>;
+				type = "passive";
+			};
+
+			modem_pa_fr1_trip1: modem-pa-fr1-trip1 {
+				hysteresis = <0xfa0>;
+				temperature = <0xb3b0>;
+				type = "passive";
+			};
+
+			modem_pa_fr1_trip2: modem-pa-fr1-trip2 {
+				hysteresis = <0xfa0>;
+				temperature = <0xdac0>;
+				type = "passive";
+			};
+		};
+	};
+};
+
+/* Explicitly disable modem and camera thermal zones to avoid thermal throttling / panics */
+&thermal_zones {
+	modem-mmw-pa1-step {
+		disable-thermal-zone;
+		status = "disabled";
+	};
+
+	modem-mmw-pa2-step {
+		disable-thermal-zone;
+		status = "disabled";
+	};
+
+	modem-mmw-pa3-step {
+		disable-thermal-zone;
+		status = "disabled";
+	};
+
+	modem-mmw0-mod-usr {
+		disable-thermal-zone;
+		status = "disabled";
+	};
+
+	modem-mmw0-usr {
+		disable-thermal-zone;
+		status = "disabled";
+	};
+
+	modem-mmw1-mod-usr {
+		disable-thermal-zone;
+		status = "disabled";
+	};
+
+	modem-mmw1-usr {
+		disable-thermal-zone;
+		status = "disabled";
+	};
+
+	modem-mmw2-mod-usr {
+		disable-thermal-zone;
+		status = "disabled";
+	};
+
+	modem-mmw2-usr {
+		disable-thermal-zone;
+		status = "disabled";
+	};
+
+	modem-mmw3-mod-usr {
+		disable-thermal-zone;
+		status = "disabled";
+	};
+
+	modem-mmw3-usr {
+		disable-thermal-zone;
+		status = "disabled";
+	};
+
+	modem-streamer-usr {
+		disable-thermal-zone;
+		status = "disabled";
+	};
+
+	rear-cam-therm-usr {
+		disable-thermal-zone;
+		status = "disabled";
+	};
+};
