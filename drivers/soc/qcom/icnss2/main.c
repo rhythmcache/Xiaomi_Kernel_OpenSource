@@ -400,6 +400,17 @@ bool icnss_is_fw_down(void)
 }
 EXPORT_SYMBOL(icnss_is_fw_down);
 
+unsigned long icnss_get_device_config(void)
+{
+	struct icnss_priv *priv = icnss_get_plat_priv();
+
+	if (!priv)
+		return 0;
+
+	return priv->device_config;
+}
+EXPORT_SYMBOL(icnss_get_device_config);
+
 bool icnss_is_rejuvenate(void)
 {
 	if (!penv)
