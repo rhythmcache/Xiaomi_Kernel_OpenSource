@@ -21,6 +21,7 @@ on:
     branches:
       - vector-port
       - main
+      - test-disable-debug-panics
     paths-ignore:
       - '**.md'
       - '**.rst'
